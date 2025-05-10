@@ -13,7 +13,10 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Controllers\" />
+      <None Remove="Resources\Database\DatabaseCreate.sql" />
+      <EmbeddedResource Include="Resources\Database\DatabaseCreate.sql" />
+      <None Remove="Resources\Database\DatabaseFill.sql" />
+      <EmbeddedResource Include="Resources\Database\DatabaseFill.sql" />
     </ItemGroup>
 
 </Project>
