@@ -12,7 +12,7 @@ public class ProductRepository : IProductRepository
         _connectionFactory = connectionFactory;
     }
     
-    public async Task<Product?> GetByIdAsync(int id)
+    public async Task<Product?> GetByIdAsync(int id, CancellationToken cancellationToken)
     {
         const string sql  = "SELECT * FROM Product WHERE IdProduct = @ProductId";
 
@@ -21,10 +21,10 @@ public class ProductRepository : IProductRepository
         cmd.CommandText = sql;
         cmd.Parameters.AddWithValue("@ProductId", id);
 
-        await conn.OpenAsync();
-        await using var reader = await cmd.ExecuteReaderAsync();
+        await conn.OpenAsync(cancellationToken);
+        await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
 
-        if (!await reader.ReadAsync()) return null;
+        if (!await reader.ReadAsync(cancellationToken)) return null;
         
         return new Product
         {

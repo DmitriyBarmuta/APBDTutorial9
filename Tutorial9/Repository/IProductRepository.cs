@@ -4,5 +4,5 @@ namespace Tutorial9.Repository;
 
 public interface IProductRepository
 {
-    Task<Product?> GetByIdAsync(int id);
+    Task<Product?> GetByIdAsync(int id, CancellationToken cancellationToken);
 }

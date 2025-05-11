@@ -4,6 +4,6 @@ namespace Tutorial9.Repository;
 
 public interface IOrderRepository
 {
-    Task<Order?> GetByConstraintsAsync(int productId, int amount, DateTime createdAt);
-    Task<bool> FulfillOrderAsync(int orderId);
+    Task<Order?> GetByConstraintsAsync(int productId, int amount, DateTime createdAt, CancellationToken cancellationToken);
+    Task<bool> FulfillOrderAsync(int orderId, CancellationToken cancellationToken);
 }

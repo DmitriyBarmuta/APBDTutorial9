@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
 using Tutorial9.Exceptions;
 using Tutorial9.Model.ProductWarehouse;
 using Tutorial9.Services;
@@ -18,13 +17,13 @@ public class WarehouseController : ControllerBase
     }
     
     [HttpPost]
-    public async Task<IActionResult> CreateProductWarehouse([FromBody] CreateProductWarehouseDTO createDto)
+    public async Task<IActionResult> CreateProductWarehouse([FromBody] CreateProductWarehouseDTO createDto, CancellationToken cancellationToken)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
         try
         {
-            var id = await _warehouseService.CreateProductWarehouseAsync(createDto);
+            var id = await _warehouseService.CreateProductWarehouseAsync(createDto, cancellationToken);
             return CreatedAtAction(nameof(CreateProductWarehouse), new { id }, new { id });
         }
         catch (Exception ex) when (ex is InvalidProductIdException or InvalidProductIdException)
@@ -46,13 +45,13 @@ public class WarehouseController : ControllerBase
     }
 
     [HttpPost("procedure")]
-    public async Task<IActionResult> CreateProductWarehouseWithProcedure([FromBody] CreateProductWarehouseDTO createDto)
+    public async Task<IActionResult> CreateProductWarehouseWithProcedure([FromBody] CreateProductWarehouseDTO createDto, CancellationToken cancellationToken)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
         try
         {
-            var id = await _warehouseService.CreateProductWarehouseWithProcedureAsync(createDto);
+            var id = await _warehouseService.CreateProductWarehouseWithProcedureAsync(createDto, cancellationToken);
             return CreatedAtAction(nameof(CreateProductWarehouseWithProcedure), new { id }, new { id });
         }
         catch (Exception ex) when (ex is InvalidProductIdException or InvalidProductIdException)

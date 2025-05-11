@@ -12,7 +12,7 @@ public class OrderRepository : IOrderRepository
         _connectionFactory = connectionFactory;
     }
     
-    public async Task<Order?> GetByConstraintsAsync(int productId, int amount, DateTime createdAt)
+    public async Task<Order?> GetByConstraintsAsync(int productId, int amount, DateTime createdAt, CancellationToken cancellationToken)
     {
         const string sql = """
                            SELECT *
@@ -29,13 +29,13 @@ public class OrderRepository : IOrderRepository
         cmd.Parameters.AddWithValue("@Amount", amount);
         cmd.Parameters.AddWithValue("@CreatedAt", createdAt);
 
-        await conn.OpenAsync();
-        await using var reader = await cmd.ExecuteReaderAsync();
+        await conn.OpenAsync(cancellationToken);
+        await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
 
-        if (!await reader.ReadAsync()) return null;
+        if (!await reader.ReadAsync(cancellationToken)) return null;
         
         var fulfilledAtOrdinal = reader.GetOrdinal("FulfilledAt");
-        DateTime? fulfilledAt = await reader.IsDBNullAsync(fulfilledAtOrdinal)
+        DateTime? fulfilledAt = await reader.IsDBNullAsync(fulfilledAtOrdinal, cancellationToken)
             ? null
             : reader.GetDateTime(fulfilledAtOrdinal);
         return new Order
@@ -49,7 +49,7 @@ public class OrderRepository : IOrderRepository
 
     }
 
-    public async Task<bool> FulfillOrderAsync(int orderId)
+    public async Task<bool> FulfillOrderAsync(int orderId, CancellationToken cancellationToken)
     {
         const string sql = "UPDATE [Order] SET FulfilledAt = GETDATE() WHERE IdOrder = @IdOrder;";
 
@@ -58,9 +58,9 @@ public class OrderRepository : IOrderRepository
         cmd.CommandText = sql;
         cmd.Parameters.AddWithValue("@IdOrder", orderId);
 
-        await conn.OpenAsync();
+        await conn.OpenAsync(cancellationToken);
         
-        var result = await cmd.ExecuteNonQueryAsync();
+        var result = await cmd.ExecuteNonQueryAsync(cancellationToken);
         return result > 0;
     }
 }

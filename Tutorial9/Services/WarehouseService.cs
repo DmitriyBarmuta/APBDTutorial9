@@ -1,3 +1,4 @@
+using System.Threading;
 using Tutorial9.Exceptions;
 using Tutorial9.Model.ProductWarehouse;
 using Tutorial9.Repository;
@@ -18,23 +19,23 @@ public class WarehouseService : IWarehouseService
     }
 
 
-    public async Task<int> CreateProductWarehouseAsync(CreateProductWarehouseDTO createDto)
+    public async Task<int> CreateProductWarehouseAsync(CreateProductWarehouseDTO createDto, CancellationToken cancellationToken)
     {
         if (createDto.IdProduct <= 0) throw new InvalidProductIdException("Product id must be positive integer.");
         if (createDto.IdWarehouse <= 0) throw new InvalidWarehouseIdException("Warehouse id must be positive integer.");
 
         var order = await _orderRepository.GetByConstraintsAsync(createDto.IdProduct, createDto.Amount,
-            createDto.CreatedAt); 
+            createDto.CreatedAt, cancellationToken); 
         if (order == null)
             throw new NoSuchOrderException($"There is no earlier order with product ID {createDto.IdProduct} and amount {createDto.Amount}.");
-        if (await _warehouseRepository.ExistForOrderAsync(order.IdOrder))
+        if (await _warehouseRepository.ExistForOrderAsync(order.IdOrder, cancellationToken))
             throw new AlreadyCompletedOrderException($"This order {order.IdOrder} was already completed.");
 
-        var result = await _orderRepository.FulfillOrderAsync(order.IdOrder);
+        var result = await _orderRepository.FulfillOrderAsync(order.IdOrder, cancellationToken);
         if (!result)
             throw new DatabaseConnectionException($"Failed to fulfill the order with ID {result}");
 
-        var product = await _productRepository.GetByIdAsync(createDto.IdProduct);
+        var product = await _productRepository.GetByIdAsync(createDto.IdProduct, cancellationToken);
         if (product == null)
             throw new NoSuchOrderException($"There is no product with product ID {createDto.IdProduct}.");
 
@@ -48,14 +49,14 @@ public class WarehouseService : IWarehouseService
             CreatedAt = order.CreatedAt
         };
 
-        return await _warehouseRepository.CreateProductWarehouseAsync(productWarehouse);
+        return await _warehouseRepository.CreateProductWarehouseAsync(productWarehouse, cancellationToken);
     }
 
-    public async Task<int> CreateProductWarehouseWithProcedureAsync(CreateProductWarehouseDTO createDto)
+    public async Task<int> CreateProductWarehouseWithProcedureAsync(CreateProductWarehouseDTO createDto, CancellationToken cancellationToken)
     {
         if (createDto.IdProduct <= 0) throw new InvalidProductIdException("Product id must be positive integer.");
         if (createDto.IdWarehouse <= 0) throw new InvalidWarehouseIdException("Warehouse id must be positive integer.");
         
-        return await _warehouseRepository.CallCreationOfProductWarehouseProcedureAsync(createDto);
+        return await _warehouseRepository.CallCreationOfProductWarehouseProcedureAsync(createDto, cancellationToken);
     }
 }
