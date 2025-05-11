@@ -1,4 +1,4 @@
-using Tutorial8.Infrastructure;
+using Tutorial9.Infrastructure;
 using Tutorial9.Model.Order;
 
 namespace Tutorial9.Repository;
@@ -14,12 +14,19 @@ public class OrderRepository : IOrderRepository
     
     public async Task<Order?> GetByConstraintsAsync(int productId, int amount, DateTime createdAt)
     {
-        const string sql = "SELECT * FROM [Order] WHERE IdProduct = @IdProduct AND CreatedAt = @CreatedAt;";
+        const string sql = """
+                           SELECT *
+                           FROM [Order]
+                           WHERE IdProduct = @IdProduct
+                           AND Amount = @Amount
+                           AND CreatedAt < @CreatedAt;
+                           """;
 
         await using var conn = _connectionFactory.GetConnection();
         await using var cmd = conn.CreateCommand();
         cmd.CommandText = sql;
         cmd.Parameters.AddWithValue("@IdProduct", productId);
+        cmd.Parameters.AddWithValue("@Amount", amount);
         cmd.Parameters.AddWithValue("@CreatedAt", createdAt);
 
         await conn.OpenAsync();

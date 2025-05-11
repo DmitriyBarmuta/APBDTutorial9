@@ -1,4 +1,3 @@
-using Tutorial8.Exceptions;
 using Tutorial9.Exceptions;
 using Tutorial9.Model.ProductWarehouse;
 using Tutorial9.Repository;
@@ -50,5 +49,10 @@ public class WarehouseService : IWarehouseService
         };
 
         return await _warehouseRepository.CreateProductWarehouseAsync(productWarehouse);
+    }
+
+    public async Task<int> CreateProductWarehouseWithProcedureAsync(CreateProductWarehouseDTO createDto)
+    {
+        return await _warehouseRepository.CallCreationOfProductWarehouseProcedureAsync(createDto);
     }
 }

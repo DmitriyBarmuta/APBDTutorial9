@@ -1,4 +1,4 @@
-namespace Tutorial8.Exceptions;
+namespace Tutorial9.Exceptions;
 
 public class DatabaseConnectionException : Exception
 {

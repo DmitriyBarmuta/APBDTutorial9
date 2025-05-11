@@ -1,15 +1,18 @@
-using Tutorial8.Infrastructure;
+using System.Data;
+using Microsoft.AspNetCore.SignalR.Protocol;
+using Tutorial9.Exceptions;
+using Tutorial9.Infrastructure;
 using Tutorial9.Model.ProductWarehouse;
 
 namespace Tutorial9.Repository;
 
 public class WarehouseRepository : IWarehouseRepository
 {
-    private readonly ISqlConnectionFactory _sqlConnectionFactory;
+    private readonly ISqlConnectionFactory _connectionFactory;
 
-    public WarehouseRepository(ISqlConnectionFactory sqlConnectionFactory)
+    public WarehouseRepository(ISqlConnectionFactory connectionFactory)
     {
-        _sqlConnectionFactory = sqlConnectionFactory;
+        _connectionFactory = connectionFactory;
     }
     
     public async Task<int> CreateProductWarehouseAsync(ProductWarehouse productWarehouse)
@@ -20,7 +23,7 @@ public class WarehouseRepository : IWarehouseRepository
                            VALUES (@IdWarehouse, @IdProduct, @IdOrder, @Amount, @Price, @CreatedAt);
                            """;
 
-        await using var conn = _sqlConnectionFactory.GetConnection();
+        await using var conn = _connectionFactory.GetConnection();
         await using var cmd = conn.CreateCommand();
         cmd.CommandText = sql;
         cmd.Parameters.AddWithValue("@IdWarehouse", productWarehouse.IdWarehouse);
@@ -38,7 +41,7 @@ public class WarehouseRepository : IWarehouseRepository
     {
         const string sql = "SELECT COUNT(*) FROM Product_Warehouse WHERE IdOrder = @IdOrder;";
 
-        await using var conn = _sqlConnectionFactory.GetConnection();
+        await using var conn = _connectionFactory.GetConnection();
         await using var cmd = conn.CreateCommand();
         cmd.CommandText = sql;
         cmd.Parameters.AddWithValue("@IdOrder", orderId);
@@ -46,5 +49,26 @@ public class WarehouseRepository : IWarehouseRepository
         await conn.OpenAsync();
         var result = (int)(await cmd.ExecuteScalarAsync() ?? 0);
         return result > 0; 
+    }
+
+    public async Task<int> CallCreationOfProductWarehouseProcedureAsync(CreateProductWarehouseDTO createDto)
+    {
+        await using var conn = _connectionFactory.GetConnection();
+        await using var cmd = conn.CreateCommand();
+        cmd.CommandText = "";
+        cmd.CommandType = CommandType.StoredProcedure;
+
+        cmd.Parameters.AddWithValue("@IdProduct", createDto.IdProduct);
+        cmd.Parameters.AddWithValue("@IdWarehouse", createDto.IdWarehouse);
+        cmd.Parameters.AddWithValue("@Amount", createDto.Amount);
+        cmd.Parameters.AddWithValue("CreatedAt", createDto.CreatedAt);
+
+        await conn.OpenAsync();
+
+        var result = await cmd.ExecuteScalarAsync();
+        if (result == null || result == DBNull.Value)
+            throw new ProcedureExecutionException("Stored procedure failed to return new ID.");
+
+        return (int)result;
     }
 }

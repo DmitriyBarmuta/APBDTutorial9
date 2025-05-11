@@ -6,4 +6,5 @@ public interface IWarehouseRepository
 {
     Task<int> CreateProductWarehouseAsync(ProductWarehouse productWarehouse);
     Task<bool> ExistForOrderAsync(int orderId);
+    Task<int> CallCreationOfProductWarehouseProcedureAsync(CreateProductWarehouseDTO createDto);
 }

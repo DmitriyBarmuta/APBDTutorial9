@@ -1,8 +1,7 @@
 using System.Reflection;
-using Microsoft.Data.SqlClient;
-using Tutorial8.Infrastructure;
+using Tutorial9.Infrastructure;
 
-namespace Tutorial8.Config;
+namespace Tutorial9.Config;
 
 public class DatabaseInitializer
 {

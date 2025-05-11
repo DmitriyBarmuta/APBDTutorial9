@@ -40,7 +40,31 @@ public class WarehouseController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "An unexpected error occurred.", detail = ex.Message });
+            return StatusCode(500, new { error = "An unexpected server internal error occurred.", detail = ex.Message });
+        }
+    }
+
+    [HttpPost("procedure")]
+    public async Task<IActionResult> CreateProductWarehouseWithProcedure([FromBody] CreateProductWarehouseDTO createDto)
+    {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
+        try
+        {
+            var id = await _warehouseService.CreateProductWarehouseWithProcedureAsync(createDto);
+            return CreatedAtAction(nameof(CreateProductWarehouseWithProcedure), new { id }, new { id });
+        }
+        catch (Exception ex) when (ex is InvalidProductIdException or InvalidProductIdException)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (AlreadyCompletedOrderException ex)
+        {
+            return Conflict(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "An unexpected server internal error occured.", detail = ex.Message });
         }
     }
 }
