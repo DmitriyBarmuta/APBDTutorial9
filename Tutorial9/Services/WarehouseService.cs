@@ -53,6 +53,9 @@ public class WarehouseService : IWarehouseService
 
     public async Task<int> CreateProductWarehouseWithProcedureAsync(CreateProductWarehouseDTO createDto)
     {
+        if (createDto.IdProduct <= 0) throw new InvalidProductIdException("Product id must be positive integer.");
+        if (createDto.IdWarehouse <= 0) throw new InvalidWarehouseIdException("Warehouse id must be positive integer.");
+        
         return await _warehouseRepository.CallCreationOfProductWarehouseProcedureAsync(createDto);
     }
 }
