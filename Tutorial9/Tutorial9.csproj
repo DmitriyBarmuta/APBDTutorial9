@@ -17,6 +17,8 @@
       <EmbeddedResource Include="Resources\Database\DatabaseCreate.sql" />
       <None Remove="Resources\Database\DatabaseFill.sql" />
       <EmbeddedResource Include="Resources\Database\DatabaseFill.sql" />
+      <None Remove="Resources\Database\Procedure.sql" />
+      <EmbeddedResource Include="Resources\Database\Procedure.sql" />
     </ItemGroup>
 
 </Project>

@@ -55,13 +55,13 @@ public class WarehouseRepository : IWarehouseRepository
     {
         await using var conn = _connectionFactory.GetConnection();
         await using var cmd = conn.CreateCommand();
-        cmd.CommandText = "";
+        cmd.CommandText = "AddProductToWarehouse";
         cmd.CommandType = CommandType.StoredProcedure;
 
         cmd.Parameters.AddWithValue("@IdProduct", createDto.IdProduct);
         cmd.Parameters.AddWithValue("@IdWarehouse", createDto.IdWarehouse);
         cmd.Parameters.AddWithValue("@Amount", createDto.Amount);
-        cmd.Parameters.AddWithValue("CreatedAt", createDto.CreatedAt);
+        cmd.Parameters.AddWithValue("@CreatedAt", createDto.CreatedAt);
 
         await conn.OpenAsync();
 

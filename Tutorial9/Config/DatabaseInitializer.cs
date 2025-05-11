@@ -20,13 +20,12 @@ public class DatabaseInitializer
 
 
         var createSql = ReadEmbeddedSql("DatabaseCreate.sql");
+        await using var createCmd = connection.CreateCommand();
+        createCmd.CommandText = createSql;
+        await createCmd.ExecuteNonQueryAsync();
+
         var fillSql = ReadEmbeddedSql("DatabaseFill.sql");
-
-        await using var createCommand = connection.CreateCommand();
-        createCommand.CommandText = createSql;
-        await createCommand.ExecuteNonQueryAsync();
-
-        var checkCmd = connection.CreateCommand();
+        await using var checkCmd = connection.CreateCommand();
         checkCmd.CommandText = "SELECT COUNT(*) FROM Product";
         var result = (int)(await checkCmd.ExecuteScalarAsync() ?? 0);
 
@@ -36,6 +35,11 @@ public class DatabaseInitializer
             fillCommand.CommandText = fillSql;
             await fillCommand.ExecuteNonQueryAsync();
         }
+        
+        var procedureSql = ReadEmbeddedSql("Procedure.sql");
+        await using var procedureCmd = connection.CreateCommand();
+        procedureCmd.CommandText = procedureSql;
+        await procedureCmd.ExecuteNonQueryAsync();
     }
 
     private static string ReadEmbeddedSql(string fileName)

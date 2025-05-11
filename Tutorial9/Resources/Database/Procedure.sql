@@ -1,8 +1,8 @@
-CREATE PROCEDURE AddProductToWarehouse @IdProduct INT, @IdWarehouse INT, @Amount INT, @CreatedAt DATETIME
+CREATE OR ALTER PROCEDURE AddProductToWarehouse @IdProduct INT, @IdWarehouse INT, @Amount INT, @CreatedAt DATETIME
 AS
 BEGIN
 
-    DECLARE @IdProductFromDb INT, @IdOrder INT, @Price DECIMAL(5, 2);
+    DECLARE @IdProductFromDb INT, @IdOrder INT, @Price DECIMAL(25, 2);
 
     SELECT TOP 1 @IdOrder = o.IdOrder
     FROM [Order] o
@@ -31,15 +31,24 @@ BEGIN
 
     SET XACT_ABORT ON;
     BEGIN TRAN;
+    BEGIN TRY
 
-    UPDATE [Order]
-    SET FulfilledAt=@CreatedAt
-    WHERE IdOrder = @IdOrder;
+        UPDATE [Order]
+        SET FulfilledAt = GETDATE()
+        WHERE IdOrder = @IdOrder;
 
-    INSERT INTO Product_Warehouse(IdWarehouse,
-                                  IdProduct, IdOrder, Amount, Price, CreatedAt)
-    VALUES (@IdWarehouse, @IdProduct, @IdOrder, @Amount, @Amount * @Price, @CreatedAt);
+        INSERT INTO Product_Warehouse
+        (IdWarehouse, IdProduct, IdOrder, Amount, Price, CreatedAt)
+        VALUES (@IdWarehouse, @IdProduct, @IdOrder, @Amount, @Amount * @Price, @CreatedAt);
 
-    SELECT @@IDENTITY AS NewId;
-    COMMIT;
+        DECLARE @NewId INT = CAST(SCOPE_IDENTITY() AS INT);
+
+        COMMIT TRAN;
+
+        SELECT @NewId AS NewId;
+    END TRY
+    BEGIN CATCH
+        IF XACT_STATE() <> 0 ROLLBACK;
+        THROW;
+    END CATCH
 END
