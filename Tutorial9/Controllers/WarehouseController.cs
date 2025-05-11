@@ -20,7 +20,7 @@ public class WarehouseController : ControllerBase
     public async Task<IActionResult> CreateProductWarehouse([FromBody] CreateProductWarehouseDTO createDto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
-        
+
         try
         {
             var id = await _warehouseService.CreateProductWarehouseAsync(createDto);
@@ -28,7 +28,15 @@ public class WarehouseController : ControllerBase
         }
         catch (Exception ex) when (ex is InvalidProductIdException or InvalidProductIdException)
         {
-            return NotFound(new {error = ex.Message });
+            return NotFound(new { error = ex.Message });
+        }
+        catch (Exception ex) when (ex is NoSuchProductException or NoSuchOrderException)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (AlreadyCompletedOrderException ex)
+        {
+            return Conflict(new { error = ex.Message });
         }
         catch (Exception ex)
         {
